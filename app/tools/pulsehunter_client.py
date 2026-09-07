@@ -4,14 +4,22 @@ from typing import Dict, Any, List, Optional
 from app.core.config import settings
 from app.schemas.tools_contracts import JobItemCompact, PulseHunterJobsOutput
 
-async def fetch_pulsehunter_jobs(country: str = "European Union", is_remote: bool = True, limit: int = 5) -> Dict[str, Any]:
-    """Consulta la API de PulseHunter y aplica truncado estricto a máximo 5 ofertas."""
+async def fetch_pulsehunter_jobs(
+    search: Optional[str] = None,
+    country: Optional[str] = None,
+    is_remote: Optional[bool] = None,
+    limit: int = 5
+) -> Dict[str, Any]:
+    """Consulta la API de PulseHunter permitiendo búsqueda semántica por keyword/tecnología y país."""
     url = f"{settings.pulsehunter_api_url}/jobs/"
-    params = {
-        "country": country,
-        "is_remote": is_remote,
-        "limit": limit
-    }
+    params: Dict[str, Any] = {"limit": limit}
+    
+    if search:
+        params["search"] = search
+    if country:
+        params["country"] = country
+    if is_remote is not None:
+        params["is_remote"] = is_remote
     
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -35,8 +43,8 @@ async def fetch_pulsehunter_jobs(country: str = "European Union", is_remote: boo
                     id=item.get("id"),
                     title=item.get("title", "Desconocido"),
                     company=item.get("company", "Empresa Confidencial"),
-                    country=item.get("country", country),
-                    is_remote=item.get("is_remote", is_remote),
+                    country=item.get("country") or country or "Desconocido",
+                    is_remote=item.get("is_remote", False),
                     url=item.get("job_url") or item.get("url", ""),
                     top_skills=skills[:4]
                 ))

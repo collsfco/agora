@@ -1,20 +1,18 @@
 import json
-import asyncio
 from typing import Dict, Any, List, Optional
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
-from app.core.config import settings
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+from app.agents.factory import get_base_llm
 from app.tools.homelab_tools import get_system_status_compact, restart_docker_container_safe
 from app.tools.pulsehunter_client import fetch_pulsehunter_jobs, create_pulsehunter_search_alert
 from app.tools.engram_fts5 import search_memory
-from app.tools.obsidian_io import write_markdown_fact, read_markdown_file
-from app.agents.factory import get_base_llm
+from app.tools.obsidian_io import write_markdown_fact
 
 TOOLS_DEFINITION = [
     {
         "type": "function",
         "function": {
             "name": "get_system_status",
-            "description": "Obtiene CPU, RAM, Disco y estado de contenedores Docker del Homelab.",
+            "description": "Obtiene el estado general de salud del Homelab (CPU, RAM, Disco y contenedores Docker).",
             "parameters": {"type": "object", "properties": {}, "required": []}
         }
     },
@@ -36,12 +34,13 @@ TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "get_pulsehunter_jobs",
-            "description": "Consulta las vacantes de empleo tech recientes en PulseHunter.",
+            "description": "Consulta y filtra ofertas de empleo tech en la base de datos de PulseHunter.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "country": {"type": "string", "description": "European Union, Ireland, Spain, etc."},
-                    "is_remote": {"type": "boolean", "description": "True para 100% remoto"}
+                    "search": {"type": "string", "description": "Tecnología, rol o palabra clave (ej: React, PHP, Python, Frontend)"},
+                    "country": {"type": "string", "description": "País o región (ej: Ireland, Spain, European Union)"},
+                    "is_remote": {"type": "boolean", "description": "True para 100% remoto, False para presencial/híbrido"}
                 },
                 "required": []
             }
@@ -112,7 +111,8 @@ TOOLS_DEFINITION = [
 PRINCIPAL_A_PROMPT = """Eres el Copiloto Técnico de Principal A (Ágora Supervisor).
 Tu misión es gestionar su Homelab, ofertas de empleo con PulseHunter y su memoria en Obsidian.
 Tu tono es directo, profesional, técnico y conciso.
-Responde siempre en español y utiliza las herramientas para fundamentar tus respuestas con datos reales."""
+Responde siempre en español y utiliza las herramientas para fundamentar tus respuestas con datos reales.
+Cuando el usuario pida ofertas de una tecnología o país específico, pasa siempre los parámetros exactos a get_pulsehunter_jobs."""
 
 PRINCIPAL_B_PROMPT = """Eres el Asistente Personal de Principal B (Ágora Supervisor).
 Tu misión es asistir con notas diarias, consultas generales, recordatorios y estado general.
@@ -131,9 +131,10 @@ async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notif
         return json.dumps(res, ensure_ascii=False)
         
     elif name == "get_pulsehunter_jobs":
-        country = args.get("country", "European Union")
-        is_rem = args.get("is_remote", True)
-        res = await fetch_pulsehunter_jobs(country=country, is_remote=is_rem)
+        search = args.get("search")
+        country = args.get("country")
+        is_rem = args.get("is_remote")
+        res = await fetch_pulsehunter_jobs(search=search, country=country, is_remote=is_rem)
         return json.dumps(res, ensure_ascii=False)
         
     elif name == "create_pulsehunter_alert":

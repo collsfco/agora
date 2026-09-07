@@ -48,7 +48,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     principal_id = get_principal_id_by_user_id(user_id) or "principal_a"
     
-    logger.info(f"📩 Mensaje recibido de [{principal_id}] (ID: {user_id}): '{user_text}'")
+    logger.info(f"📩 [PROCESANDO] Mensaje recibido de [{principal_id}] (ID: {user_id}): '{user_text}'")
     
     if user_id not in chat_histories:
         chat_histories[user_id] = []
@@ -79,7 +79,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             conversation_history=history[-6:],
             peer_notifier=peer_notify
         )
-        logger.info(f"🤖 Respuesta generada para {user_id}: {response_text[:80]}...")
+        logger.info(f"🤖 [GENERADA] Respuesta para {user_id}: {response_text[:80]}...")
     except Exception as e:
         logger.error(f"Error procesando turno del agente: {e}", exc_info=True)
         response_text = f"⚠️ Error en el procesamiento del agente: {e}"
@@ -89,7 +89,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         await update.message.reply_text(response_text)
-        logger.info(f"✅ Respuesta entregada con éxito a Telegram para {user_id}")
+        logger.info(f"✅ [ENVIADA] Respuesta entregada con éxito a Telegram para {user_id}")
     except Exception as e:
         logger.error(f"Error enviando reply a Telegram: {e}", exc_info=True)
 
@@ -110,4 +110,4 @@ def start_telegram_bot_service():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
     app.add_error_handler(error_handler)
 
-    app.run_polling(drop_pending_updates=False)
+    app.run_polling(drop_pending_updates=False, allowed_updates=Update.ALL_TYPES)

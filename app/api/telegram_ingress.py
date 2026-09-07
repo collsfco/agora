@@ -13,9 +13,9 @@ chat_histories: Dict[int, list] = {}
 
 def get_principal_id_by_user_id(user_id: int) -> Optional[str]:
     """Identifica si el remitente es Principal A o Principal B."""
-    if settings.telegram_user_id_francisco and user_id == settings.telegram_user_id_francisco:
+    if settings.telegram_user_id_principal_a and user_id == settings.telegram_user_id_principal_a:
         return "principal_a"
-    if settings.telegram_user_id_esposa and user_id == settings.telegram_user_id_esposa:
+    if settings.telegram_user_id_principal_b and user_id == settings.telegram_user_id_principal_b:
         return "principal_b"
     return None
 
@@ -54,7 +54,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Función auxiliar para notificaciones cruzadas
     async def peer_notify(target_principal: str, msg: str):
-        target_uid = settings.telegram_user_id_esposa if target_principal == "principal_b" else settings.telegram_user_id_francisco
+        target_uid = settings.telegram_user_id_principal_b if target_principal == "principal_b" else settings.telegram_user_id_principal_a
         if target_uid and context.bot:
             try:
                 await context.bot.send_message(

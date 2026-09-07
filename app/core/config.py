@@ -8,28 +8,31 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+class PrincipalProfileConfig(BaseModel):
+    user_id: Optional[int] = None
+    bot_token: str = ""
+    vault_path: str = ""
+
 class Settings(BaseModel):
     # Ollama
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ollama_model: str = os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct")
 
-    # Telegram Francisco
-    telegram_bot_token_francisco: str = os.getenv("TELEGRAM_BOT_TOKEN_FRANCISCO", "")
-    telegram_user_id_francisco: Optional[int] = (
-        int(os.getenv("TELEGRAM_USER_ID_FRANCISCO")) if os.getenv("TELEGRAM_USER_ID_FRANCISCO") and os.getenv("TELEGRAM_USER_ID_FRANCISCO").isdigit() else None
+    # Principal A (Primary User Profile)
+    telegram_bot_token_principal_a: str = os.getenv("TELEGRAM_BOT_TOKEN_PRINCIPAL_A", "")
+    telegram_user_id_principal_a: Optional[int] = (
+        int(os.getenv("TELEGRAM_USER_ID_PRINCIPAL_A")) if os.getenv("TELEGRAM_USER_ID_PRINCIPAL_A") and os.getenv("TELEGRAM_USER_ID_PRINCIPAL_A").isdigit() else None
     )
+    obsidian_vault_principal_a: str = os.getenv("OBSIDIAN_VAULT_PRINCIPAL_A", str(Path.home() / "ObsidianVaults" / "PrincipalA"))
 
-    # Telegram Esposa
-    telegram_bot_token_esposa: str = os.getenv("TELEGRAM_BOT_TOKEN_ESPOSA", "")
-    telegram_user_id_esposa: Optional[int] = (
-        int(os.getenv("TELEGRAM_USER_ID_ESPOSA")) if os.getenv("TELEGRAM_USER_ID_ESPOSA") and os.getenv("TELEGRAM_USER_ID_ESPOSA").isdigit() else None
+    # Principal B (Secondary User Profile)
+    telegram_bot_token_principal_b: str = os.getenv("TELEGRAM_BOT_TOKEN_PRINCIPAL_B", "")
+    telegram_user_id_principal_b: Optional[int] = (
+        int(os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B")) if os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B") and os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B").isdigit() else None
     )
+    obsidian_vault_principal_b: str = os.getenv("OBSIDIAN_VAULT_PRINCIPAL_B", str(Path.home() / "ObsidianVaults" / "PrincipalB"))
 
-    # Obsidian Vaults
-    obsidian_vault_francisco: str = os.getenv("OBSIDIAN_VAULT_FRANCISCO", str(Path.home() / "ObsidianVaults" / "Francisco"))
-    obsidian_vault_esposa: str = os.getenv("OBSIDIAN_VAULT_ESPOSA", str(Path.home() / "ObsidianVaults" / "Esposa"))
-
-    # PulseHunter
+    # PulseHunter Local MCP Service
     pulsehunter_api_url: str = os.getenv("PULSEHUNTER_API_URL", "http://localhost:8000/api/v1")
     pulsehunter_mcp_python: str = os.getenv("PULSEHUNTER_MCP_PYTHON", "/home/colls/github/pulse-hunter/backend/.venv/bin/python")
     pulsehunter_backend_dir: str = os.getenv("PULSEHUNTER_BACKEND_DIR", "/home/colls/github/pulse-hunter/backend")

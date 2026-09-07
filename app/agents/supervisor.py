@@ -3,9 +3,10 @@ from typing import Dict, Any, List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 from app.agents.factory import get_base_llm
 from app.tools.homelab_tools import get_system_status_compact, restart_docker_container_safe
-from app.tools.pulsehunter_client import fetch_pulsehunter_jobs, create_pulsehunter_search_alert
+from app.tools.pulsehunter_client import fetch_pulsehunter_jobs, create_pulsehunter_search_alert, fetch_pulsehunter_housing
 from app.tools.engram_fts5 import search_memory
 from app.tools.obsidian_io import write_markdown_fact
+from app.tools.web_search_tool import search_internet
 
 TOOLS_DEFINITION = [
     {
@@ -43,6 +44,36 @@ TOOLS_DEFINITION = [
                     "is_remote": {"type": "boolean", "description": "True para 100% remoto, False para presencial/híbrido"}
                 },
                 "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_pulsehunter_housing",
+            "description": "Consulta viviendas y pisos en alquiler en Irlanda (Dublin, etc.) en PulseHunter.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "county": {"type": "string", "description": "Condado o ciudad (ej: Dublin, Cork, Galway)"},
+                    "max_price": {"type": "number", "description": "Precio máximo mensual en euros (ej: 1800)"},
+                    "min_bedrooms": {"type": "integer", "description": "Número mínimo de habitaciones (ej: 2)"}
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_web",
+            "description": "Busca en Internet en tiempo real noticias, clima, documentación técnica o datos de actualidad.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Términos exactos de búsqueda en Internet"}
+                },
+                "required": ["query"]
             }
         }
     },
@@ -109,13 +140,15 @@ TOOLS_DEFINITION = [
 ]
 
 PRINCIPAL_A_PROMPT = """Eres el Copiloto Técnico de Principal A (Ágora Supervisor).
-Tu misión es gestionar su Homelab, ofertas de empleo con PulseHunter y su memoria en Obsidian.
+Tu misión es gestionar su Homelab, ofertas de empleo y vivienda con PulseHunter, su memoria en Obsidian y consultar información en Internet cuando se requiera.
 Tu tono es directo, profesional, técnico y conciso.
 Responde siempre en español y utiliza las herramientas para fundamentar tus respuestas con datos reales.
-Cuando el usuario pida ofertas de una tecnología o país específico, pasa siempre los parámetros exactos a get_pulsehunter_jobs."""
+- Si te preguntan por el clima, noticias o datos externos, usa search_web.
+- Si te preguntan por casas o alquileres, usa get_pulsehunter_housing.
+- Si te preguntan por ofertas de empleo, usa get_pulsehunter_jobs."""
 
 PRINCIPAL_B_PROMPT = """Eres el Asistente Personal de Principal B (Ágora Supervisor).
-Tu misión es asistir con notas diarias, consultas generales, recordatorios y estado general.
+Tu misión es asistir con notas diarias, consultas generales, recordatorios, clima e información en Internet.
 Tu tono es amable, servicial, conciso y conversacional.
 No uses jerga de programación a menos que sea explícitamente necesario."""
 
@@ -135,6 +168,18 @@ async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notif
         country = args.get("country")
         is_rem = args.get("is_remote")
         res = await fetch_pulsehunter_jobs(search=search, country=country, is_remote=is_rem)
+        return json.dumps(res, ensure_ascii=False)
+
+    elif name == "get_pulsehunter_housing":
+        county = args.get("county", "Dublin")
+        max_p = args.get("max_price")
+        min_b = args.get("min_bedrooms")
+        res = await fetch_pulsehunter_housing(county=county, max_price=max_p, min_bedrooms=min_b)
+        return json.dumps(res, ensure_ascii=False)
+
+    elif name == "search_web":
+        q = args.get("query", "")
+        res = search_internet(query=q)
         return json.dumps(res, ensure_ascii=False)
         
     elif name == "create_pulsehunter_alert":

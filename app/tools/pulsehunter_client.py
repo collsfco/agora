@@ -81,3 +81,52 @@ async def create_pulsehunter_search_alert(name: str, role: str, country: str = "
             return f"❌ Error creando alerta ({res.status_code}): {res.text}"
     except Exception as e:
         return f"Error en PulseHunter: {e}"
+
+async def fetch_pulsehunter_housing(
+    county: Optional[str] = "Dublin",
+    max_price: Optional[float] = None,
+    min_bedrooms: Optional[int] = None,
+    listing_type: str = "rent",
+    limit: int = 5
+) -> Dict[str, Any]:
+    """Consulta la API de PulseHunter para obtener propiedades en alquiler o venta."""
+    url = f"{settings.pulsehunter_api_url}/housing/"
+    params: Dict[str, Any] = {
+        "listing_type": listing_type,
+        "limit": limit
+    }
+    if county:
+        params["county"] = county
+    if max_price is not None:
+        params["max_price"] = max_price
+    if min_bedrooms is not None:
+        params["bedrooms"] = min_bedrooms
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get(url, params=params)
+            if res.status_code != 200:
+                return {"error": f"PulseHunter Housing API respondió con código {res.status_code}"}
+            
+            data = res.json()
+            raw_items = data.get("items", [])
+            
+            properties = []
+            for item in raw_items[:limit]:
+                properties.append({
+                    "id": item.get("id"),
+                    "title": item.get("title") or item.get("address", "Propiedad"),
+                    "price_per_month": f"€{item.get('price_monthly') or item.get('price', 'N/A')}",
+                    "bedrooms": item.get("bedrooms", "N/A"),
+                    "county": item.get("county", county),
+                    "url": item.get("url", ""),
+                    "source": item.get("source", "daft")
+                })
+            
+            return {
+                "total_found": data.get("total", len(raw_items)),
+                "returned_count": len(properties),
+                "properties": properties
+            }
+    except Exception as e:
+        return {"error": f"Error conectando con PulseHunter Housing: {e}"}

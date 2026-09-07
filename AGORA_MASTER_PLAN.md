@@ -11,9 +11,9 @@
 | :--- | :--- | :--- |
 | **Fase 0** | Entorno Base, GPU (ROCm) & Validación de Ollama | ⏳ **Siguiente** |
 | **Fase 1** | Estructura del Repositorio `agora`, Entorno Virtual & Contratos | ⬜ Pendiente |
-| **Fase 2** | Capa de Memoria: Bóvedas de Obsidian (Francisco / Esposa) + Índice FTS5 | ⬜ Pendiente |
+| **Fase 2** | Capa de Memoria: Bóvedas de Obsidian (Principal_A / Principal_B) + Índice FTS5 | ⬜ Pendiente |
 | **Fase 3** | Sub-Agentes Workers (Homelab Docker & PulseHunter MCP) | ⬜ Pendiente |
-| **Fase 4** | Supervisores Principals (Francisco & Esposa) con LangGraph | ⬜ Pendiente |
+| **Fase 4** | Supervisores Principals (Principal_A & Principal_B) con LangGraph | ⬜ Pendiente |
 | **Fase 5** | Interfaz Telegram Ingress (Multiusuario / Chat IDs) | ⬜ Pendiente |
 | **Fase 6** | Automatización & Despliegue con Systemd (Arranque 24/7) | ⬜ Pendiente |
 
@@ -51,11 +51,11 @@
 
 ## 📚 FASE 2: Capa de Memoria: Bóvedas de Obsidian + Índice FTS5
 
-> **Objetivo**: Establecer las carpetas locales de Obsidian para Francisco y su Esposa, e implementar la búsqueda ultraligera por texto.
+> **Objetivo**: Establecer las carpetas locales de Obsidian para Principal_A y su Principal_B, e implementar la búsqueda ultraligera por texto.
 
 - [ ] **Tarea 2.1: Estructura de Bóvedas de Obsidian en Disco**
-  - Crear `/home/colls/ObsidianVaults/Francisco/` (`00_Perfil`, `01_Proyectos`, `02_Memoria`).
-  - Crear `/home/colls/ObsidianVaults/Esposa/` (`perfil.md`, `notas.md`).
+  - Crear `/home/colls/ObsidianVaults/Principal_A/` (`00_Perfil`, `01_Proyectos`, `02_Memoria`).
+  - Crear `/home/colls/ObsidianVaults/Principal_B/` (`perfil.md`, `notas.md`).
 - [ ] **Tarea 2.2: Módulo de Lectura/Escritura de Notas (`tools/obsidian_io.py`)**
   - Crear funciones deterministas para leer y hacer append en archivos Markdown según el usuario activo.
 - [ ] **Tarea 2.3: Índice de Búsqueda Rápida FTS5 / Engram (`tools/engram_fts5.py`)**
@@ -78,15 +78,15 @@
 
 ---
 
-## 👑 FASE 4: Supervisores Principals (Francisco & Esposa) con LangGraph
+## 👑 FASE 4: Supervisores Principals (Principal_A & Principal_B) con LangGraph
 
 > **Objetivo**: Construir los grafos de decisión de LangGraph que coordinan a los sub-agentes según el usuario.
 
 - [ ] **Tarea 4.1: Plantilla Base de Agente Reusable (`AgentFactory`)**
   - Implementar la función universal para instanciar sub-agentes con `ChatOllama(temperature=0)`.
-- [ ] **Tarea 4.2: Grafo Supervisor de Francisco (`principals/francisco/router.py`)**
+- [ ] **Tarea 4.2: Grafo Supervisor de Principal_A (`principals/principal_a/router.py`)**
   - Configurar el router con política de memoria técnica profunda (*deep memory*) y acceso completo a Homelab y PulseHunter.
-- [ ] **Tarea 4.3: Grafo Supervisor de la Esposa (`principals/esposa/router.py`)**
+- [ ] **Tarea 4.3: Grafo Supervisor de la Principal_B (`principals/principal_b/router.py`)**
   - Configurar el router con política de memoria ligera (*light memory*), tono conversacional y permisos de solo lectura.
 - [ ] **Tarea 4.4: Persistencia de Sesión con Checkpoints SQLite**
   - Configurar `langgraph-checkpoint-sqlite` en `data/checkpoints.sqlite` para pausar y reanudar tareas.
@@ -98,7 +98,7 @@
 > **Objetivo**: Conectar los bots de Telegram para interactuar con los agentes desde el móvil con enrutado por usuario.
 
 - [ ] **Tarea 5.1: Módulo de Enrutado por `chat_id` / Tokens Separados**
-  - Configurar los handlers de `python-telegram-bot` para dirigir los mensajes de Francisco a su grafo y los de su esposa al suyo.
+  - Configurar los handlers de `python-telegram-bot` para dirigir los mensajes de Principal_A a su grafo y los de su principal_b al suyo.
 - [ ] **Tarea 5.2: Filtro de Preguntas Efímeras vs. Hechos Persistentes**
   - Integrar la lógica que responde preguntas triviales sin tocar la memoria de Obsidian.
 - [ ] **Tarea 5.3: Botones Interactivos de Confirmación (*Human-in-the-Loop*)**

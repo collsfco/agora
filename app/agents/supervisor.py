@@ -7,6 +7,7 @@ from app.tools.pulsehunter_client import fetch_pulsehunter_jobs, create_pulsehun
 from app.tools.engram_fts5 import search_memory
 from app.tools.obsidian_io import write_markdown_fact
 from app.tools.web_search_tool import search_internet
+from app.tools.weather_tool import get_current_weather
 
 TOOLS_DEFINITION = [
     {
@@ -66,8 +67,22 @@ TOOLS_DEFINITION = [
     {
         "type": "function",
         "function": {
+            "name": "get_weather",
+            "description": "Obtiene el pronóstico y temperatura actual exacta de una ciudad o región (ej: Santander, Cantabria, Madrid).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string", "description": "Ciudad, municipio o región (ej: Santander, Cantabria)"}
+                },
+                "required": ["location"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "search_web",
-            "description": "Busca en Internet en tiempo real noticias, clima, documentación técnica o datos de actualidad.",
+            "description": "Busca en Internet en tiempo real noticias, artículos, documentación técnica o datos de actualidad.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -140,17 +155,17 @@ TOOLS_DEFINITION = [
 ]
 
 PRINCIPAL_A_PROMPT = """Eres el Copiloto Técnico de Principal A (Ágora Supervisor).
-Tu misión es gestionar su Homelab, ofertas de empleo y vivienda con PulseHunter, su memoria en Obsidian y consultar información en Internet cuando se requiera.
+Tu misión es gestionar su Homelab, ofertas de empleo y vivienda con PulseHunter, su memoria en Obsidian y consultar datos en Internet.
 Tu tono es directo, profesional, técnico y conciso.
 Responde siempre en español y utiliza las herramientas para fundamentar tus respuestas con datos reales.
-- Si te preguntan por el clima, noticias o datos externos, usa search_web.
+- Si te preguntan por el clima o temperatura, usa SIEMPRE get_weather y da la temperatura exacta directamente (ej: "Actualmente hay 20°C, cielo despejado..."), sin limitarte a dar solo enlaces.
 - Si te preguntan por casas o alquileres, usa get_pulsehunter_housing.
 - Si te preguntan por ofertas de empleo, usa get_pulsehunter_jobs."""
 
 PRINCIPAL_B_PROMPT = """Eres el Asistente Personal de Principal B (Ágora Supervisor).
 Tu misión es asistir con notas diarias, consultas generales, recordatorios, clima e información en Internet.
 Tu tono es amable, servicial, conciso y conversacional.
-No uses jerga de programación a menos que sea explícitamente necesario."""
+- Si te preguntan por el clima, usa SIEMPRE get_weather y da la respuesta con la temperatura real y estado del tiempo."""
 
 async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notifier: Optional[Any] = None) -> str:
     """Despacha la ejecución de herramientas inyectando el principal_id activo."""
@@ -175,6 +190,11 @@ async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notif
         max_p = args.get("max_price")
         min_b = args.get("min_bedrooms")
         res = await fetch_pulsehunter_housing(county=county, max_price=max_p, min_bedrooms=min_b)
+        return json.dumps(res, ensure_ascii=False)
+
+    elif name == "get_weather":
+        loc = args.get("location", "Santander")
+        res = await get_current_weather(city_or_region=loc)
         return json.dumps(res, ensure_ascii=False)
 
     elif name == "search_web":

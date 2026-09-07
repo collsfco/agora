@@ -1,27 +1,39 @@
 # 🚀 Ágora Superpoderes Roadmap (2026)
 
-Este documento traza la evolución de capacidades, herramientas y especialización de subagentes para el ecosistema **Ágora**, ejecutándose localmente con aceleración hardware en **AMD Radeon RX 7900 GRE (16 GB VRAM ROCm)** sobre el modelo **`qwen2.5:14b-instruct`**, con capacidad de arquitectura híbrida (Fallback & Servicios en la nube vía Gemini / Imagen 3).
+Este documento traza la evolución de capacidades, herramientas y especialización de subagentes para el ecosistema **Ágora**, ejecutándose en una **arquitectura híbrida**:
+- **Cerebro Local Privado**: Aceleración hardware en **AMD Radeon RX 7900 GRE (16 GB VRAM ROCm)** con el modelo **`qwen2.5:14b-instruct`**.
+- **Cerebro en la Nube (Google Gemini / Imagen 3)**: Fallback, generación visual y análisis de documentos gigantes mediante **Google AI Studio**.
 
 ---
 
 ## 🏛️ Fase 1: Upgrade del Cerebro Principal
 - [x] Despliegue de Ollama con ROCm (`gfx1100`).
-- [ ] Descarga y activación de **`qwen2.5:14b-instruct`** (9.0 GB VRAM, 16k contexto nativo).
-- [ ] Ajuste de `.env` y validación de *Function Calling* complejo con 14B.
+- [x] Descarga y activación de **`qwen2.5:14b-instruct`** (9.0 GB VRAM, 16k contexto nativo).
+- [x] Ajuste de `.env` y validación de *Function Calling* complejo con 14B.
 
 ---
 
-## 🎨 Fase 2: Superpoderes Visuales & Generación de Imágenes (Nuevo)
-- [ ] **Generación de Imágenes Híbrida**:
-  - **Opción Nube (Google Imagen 3 / Gemini API)**: Uso de API Key de Google AI Studio / Google Cloud para generar imágenes ultra fotorrealistas con Imagen 3.
-  - **Opción Local (ComfyUI / SDXL / FLUX.1 en GPU RX 7900 GRE)**: Generación 100% offline, gratuita y privada en local.
-  - **Entrega en Telegram**: Envío directo de la foto renderizada vía `bot.send_photo()`.
-- [ ] **Visión / OCR Multimodal**:
-  - Enviar capturas de pantalla, facturas o diagramas por Telegram para análisis visual con Gemini 1.5 Flash / Qwen-VL.
+## ☁️ Fase 2: Integración Híbrida con Google Cloud & Gemini API (Plan Detallado)
+- [ ] **Configuración de Google AI Studio**:
+  - Obtención de API Key en [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) (incluida en el ecosistema Google One AI Premium).
+  - Variable de entorno: `GEMINI_API_KEY=AIzaSy...` en `.env`.
+- [ ] **Generación de Imágenes en la Nube (Google Imagen 3)**:
+  - Tool `generate_image_gemini`: El usuario pide *"Genera una imagen fotorrealista de X"* -> El agente llama a Google Imagen 3 -> Descarga el PNG y lo envía por Telegram con `bot.send_photo()`.
+- [ ] **Análisis de Documentos Gigantes & Visión Multimodal (Gemini 1.5 Flash / Pro)**:
+  - Tool `analyze_large_document`: Capacidad para enviar PDFs de cientos de páginas, libros o transcripciones de vídeo aprovechando la ventana de contexto de 1 millón de tokens de Gemini.
+- [ ] **Fallback Automático (Modo Alta Disponibilidad)**:
+  - Si la máquina local está apagada o la GPU saturada en otras tareas (ej: gaming), el ingress de Telegram conmuta automáticamente al backend de Gemini en la nube.
 
 ---
 
-## ⚡ Fase 3: Superpoderes de Comunicación & Entrada Multimodal
+## 🎨 Fase 3: Generación de Imágenes 100% Local (Opción Offline)
+- [ ] **Despliegue de ComfyUI / SDXL / FLUX.1 en GPU AMD**:
+  - Instalación de motor de difusión local con soporte ROCm en `http://localhost:8188`.
+  - Tool `generate_image_local`: Generación privada y offline a 1024x1024 en ~2 segundos sin gastar cuota de API.
+
+---
+
+## ⚡ Fase 4: Superpoderes de Comunicación & Entrada Multimodal
 - [ ] **Telegram Voice Notes (Whisper Local)**:
   - Integración de `faster-whisper` corriendo en GPU.
   - El usuario envía audios por Telegram -> El agente transcribe al instante y procesa la orden.
@@ -30,7 +42,7 @@ Este documento traza la evolución de capacidades, herramientas y especializaci�
 
 ---
 
-## 💼 Fase 4: Superpoderes de Carrera & PulseHunter MCP
+## 💼 Fase 5: Superpoderes de Carrera & PulseHunter MCP
 - [ ] **CV Tailor & Match Score**:
   - Comparador vectorial / LLM entre tu CV en Markdown y ofertas encontradas.
   - Generación de consejos de entrevista y cartas de presentación personalizadas.
@@ -41,7 +53,7 @@ Este documento traza la evolución de capacidades, herramientas y especializaci�
 
 ---
 
-## 🖥️ Fase 5: Superpoderes de Homelab & Red Remota
+## 🖥️ Fase 6: Superpoderes de Homelab & Red Remota
 - [ ] **Conexión Raspberry Pi (SSH / Docker Socket Remoto)**:
   - Conexión directa desde Ágora al stack del Homelab en la Raspberry Pi.
 - [ ] **Container Logs & Diagnosis**:
@@ -51,7 +63,7 @@ Este documento traza la evolución de capacidades, herramientas y especializaci�
 
 ---
 
-## 📅 Fase 6: Superpoderes de Productividad & Vida Diaria
+## 📅 Fase 7: Superpoderes de Productividad & Vida Diaria
 - [ ] **Google Calendar & Tasks MCP**:
   - Crear, consultar y mover eventos de agenda mediante comandos de voz o texto en Telegram.
 - [ ] **Currency & Finance Converter**:
@@ -61,7 +73,7 @@ Este documento traza la evolución de capacidades, herramientas y especializaci�
 
 ---
 
-## 👥 Fase 7: Malla de Subagentes Especializados (LangGraph Swarm)
+## 👥 Fase 8: Malla de Subagentes Especializados (LangGraph Swarm)
 - [ ] **Supervisor Dispatcher (qwen2.5:14b)**: Enrutador central inteligente.
 - [ ] **Hunter Subagent**: Especialista en scraping, análisis de empleo y vivienda.
 - [ ] **Guardian Subagent**: Monitorización 24/7 y mantenimiento del Homelab.

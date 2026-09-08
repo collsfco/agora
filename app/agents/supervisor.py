@@ -3,7 +3,14 @@ from typing import Dict, Any, List, Optional
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 from app.agents.factory import get_base_llm
 from app.tools.homelab_tools import get_system_status_compact, restart_docker_container_safe
-from app.tools.pulsehunter_client import fetch_pulsehunter_jobs, create_pulsehunter_search_alert, fetch_pulsehunter_housing
+from app.tools.pulsehunter_client import (
+    fetch_pulsehunter_jobs,
+    create_pulsehunter_search_alert,
+    fetch_pulsehunter_housing,
+    list_pulsehunter_alerts,
+    trigger_pulsehunter_alert_execution,
+    delete_pulsehunter_alert
+)
 from app.tools.engram_fts5 import search_memory
 from app.tools.obsidian_io import write_markdown_fact
 from app.tools.web_search_tool import search_internet
@@ -67,6 +74,64 @@ TOOLS_DEFINITION = [
     {
         "type": "function",
         "function": {
+            "name": "list_pulsehunter_alerts",
+            "description": "Lista todas las alertas automáticas de empleo o vivienda configuradas en PulseHunter.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "alert_type": {"type": "string", "description": "Opcional: 'job' para empleo o 'housing' para vivienda"}
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "trigger_pulsehunter_alert",
+            "description": "Fuerza la ejecución inmediata de una alerta de rastreo de PulseHunter por su ID.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "alert_id": {"type": "integer", "description": "ID numérico de la alerta a ejecutar"}
+                },
+                "required": ["alert_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_pulsehunter_alert",
+            "description": "Elimina permanentemente una alerta de rastreo de PulseHunter por su ID.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "alert_id": {"type": "integer", "description": "ID numérico de la alerta a eliminar"}
+                },
+                "required": ["alert_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_pulsehunter_alert",
+            "description": "Crea una alerta de empleo recurrente en PulseHunter.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Nombre de la alerta"},
+                    "role": {"type": "string", "description": "Tecnología o rol (PHP, React, etc.)"},
+                    "country": {"type": "string", "description": "País o región"}
+                },
+                "required": ["name", "role"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_weather",
             "description": "Obtiene el pronóstico y temperatura actual exacta de una ciudad o región (ej: Santander, Cantabria, Madrid).",
             "parameters": {
@@ -89,22 +154,6 @@ TOOLS_DEFINITION = [
                     "query": {"type": "string", "description": "Términos exactos de búsqueda en Internet"}
                 },
                 "required": ["query"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "create_pulsehunter_alert",
-            "description": "Crea una alerta de empleo recurrente en PulseHunter.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string", "description": "Nombre de la alerta"},
-                    "role": {"type": "string", "description": "Tecnología o rol (PHP, React, etc.)"},
-                    "country": {"type": "string", "description": "País o región"}
-                },
-                "required": ["name", "role"]
             }
         }
     },
@@ -158,14 +207,14 @@ PRINCIPAL_A_PROMPT = """Eres el Copiloto Técnico de Principal A (Ágora Supervi
 Tu misión es gestionar su Homelab, ofertas de empleo y vivienda con PulseHunter, su memoria en Obsidian y consultar datos en Internet.
 Tu tono es directo, profesional, técnico y conciso.
 Responde siempre en español y utiliza las herramientas para fundamentar tus respuestas con datos reales.
-- Si te preguntan por el clima o temperatura, usa SIEMPRE get_weather y da la temperatura exacta directamente (ej: "Actualmente hay 20°C, cielo despejado..."), sin limitarte a dar solo enlaces.
+- Si te preguntan por el clima o temperatura, usa SIEMPRE get_weather y da la temperatura exacta directamente.
 - Si te preguntan por casas o alquileres, usa get_pulsehunter_housing.
-- Si te preguntan por ofertas de empleo, usa get_pulsehunter_jobs."""
+- Si te preguntan por ofertas de empleo, usa get_pulsehunter_jobs.
+- Si te piden ver, crear, ejecutar o borrar alertas de búsqueda, usa las herramientas list_pulsehunter_alerts, create_pulsehunter_alert, trigger_pulsehunter_alert y delete_pulsehunter_alert."""
 
 PRINCIPAL_B_PROMPT = """Eres el Asistente Personal de Principal B (Ágora Supervisor).
 Tu misión es asistir con notas diarias, consultas generales, recordatorios, clima e información en Internet.
-Tu tono es amable, servicial, conciso y conversacional.
-- Si te preguntan por el clima, usa SIEMPRE get_weather y da la respuesta con la temperatura real y estado del tiempo."""
+Tu tono es amable, servicial, conciso y conversacional."""
 
 async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notifier: Optional[Any] = None) -> str:
     """Despacha la ejecución de herramientas inyectando el principal_id activo."""
@@ -191,6 +240,19 @@ async def execute_tool_call(name: str, args: dict, principal_id: str, peer_notif
         min_b = args.get("min_bedrooms")
         res = await fetch_pulsehunter_housing(county=county, max_price=max_p, min_bedrooms=min_b)
         return json.dumps(res, ensure_ascii=False)
+
+    elif name == "list_pulsehunter_alerts":
+        a_type = args.get("alert_type")
+        res = await list_pulsehunter_alerts(alert_type=a_type)
+        return json.dumps(res, ensure_ascii=False)
+
+    elif name == "trigger_pulsehunter_alert":
+        a_id = args.get("alert_id")
+        return await trigger_pulsehunter_alert_execution(alert_id=int(a_id))
+
+    elif name == "delete_pulsehunter_alert":
+        a_id = args.get("alert_id")
+        return await delete_pulsehunter_alert(alert_id=int(a_id))
 
     elif name == "get_weather":
         loc = args.get("location", "Santander")

@@ -88,7 +88,11 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     history.append({"role": "assistant", "content": response_text})
 
     try:
-        await update.message.reply_text(response_text)
+        try:
+            await update.message.reply_text(response_text, parse_mode="Markdown")
+        except Exception:
+            # Fallback a texto plano si el markdown contiene caracteres no cerrados
+            await update.message.reply_text(response_text)
         logger.info(f"✅ [ENVIADA] Respuesta entregada con éxito a Telegram para {user_id}")
     except Exception as e:
         logger.error(f"Error enviando reply a Telegram: {e}", exc_info=True)

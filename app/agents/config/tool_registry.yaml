@@ -1,0 +1,177 @@
+tools:
+  # Homelab Tools
+  get_homelab_overview:
+    server: homelab_mcp
+    domain: homelab
+    risk: read
+    ttl_seconds: 15
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Fetches current CPU, RAM, temperature, and container status. Read-only."
+
+  list_homelab_containers:
+    server: homelab_mcp
+    domain: homelab
+    risk: read
+    ttl_seconds: 20
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Lists running Docker containers by stack. Read-only."
+
+  get_homelab_logs:
+    server: homelab_mcp
+    domain: homelab
+    risk: read
+    ttl_seconds: 5
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Retrieves container logs. Read-only."
+
+  get_crowdsec_alerts:
+    server: homelab_mcp
+    domain: homelab
+    risk: read
+    ttl_seconds: 30
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Queries active security bans and CrowdSec alerts. Read-only."
+
+  restart_homelab_container:
+    server: homelab_mcp
+    domain: homelab
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: true
+    profiles: [principal_a]
+    description: "Restarts a Docker container. Requires external user confirmation token."
+
+  # Home Assistant / Domotics
+  get_home_status:
+    server: home_assistant
+    domain: home
+    risk: read
+    ttl_seconds: 10
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Queries home lights, climate, and sensors status. Read-only."
+
+  call_home_service:
+    server: home_assistant
+    domain: home
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Controls home lights, switches, and services."
+
+  # Workshop (Taller)
+  query_workshop_filaments:
+    server: workshop_mcp
+    domain: workshop
+    risk: read
+    ttl_seconds: 300
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Queries 3D printing filament stock in Spoolman (material, color, weight). Read-only."
+
+  search_workshop_inventory:
+    server: workshop_mcp
+    domain: workshop
+    risk: read
+    ttl_seconds: 300
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Searches component inventory and storage locations in Homebox. Read-only."
+
+  # PulseHunter
+  get_pulsehunter_jobs:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: read
+    ttl_seconds: 600
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Queries scraped job openings. Read-only."
+
+  get_pulsehunter_housing:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: read
+    ttl_seconds: 600
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Queries rental and buy housing listings. Read-only."
+
+  list_pulsehunter_alerts:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: read
+    ttl_seconds: 600
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Lists active search alert rules in Pulse Hunter. Read-only."
+
+  trigger_pulsehunter_alert:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: false
+    profiles: [principal_a]
+    description: "Triggers immediate scraper execution for an alert rule."
+
+  create_pulsehunter_alert:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: true
+    profiles: [principal_a]
+    description: "Creates a new job/housing alert rule. Requires user confirmation token."
+
+  delete_pulsehunter_alert:
+    server: pulsehunter_mcp
+    domain: pulsehunter
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: true
+    profiles: [principal_a]
+    description: "Deletes an existing alert rule. Requires user confirmation token."
+
+  # Weather & Web
+  get_weather:
+    server: weather_mcp
+    domain: weather_web
+    risk: read
+    ttl_seconds: 900
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Fetches current weather and forecast for a location. Read-only."
+
+  search_web:
+    server: web_search
+    domain: weather_web
+    risk: read
+    ttl_seconds: 1800
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Performs DuckDuckGo web search. Read-only."
+
+  # Knowledge & Memory
+  search_user_memory:
+    server: engram_mcp
+    domain: knowledge
+    risk: read
+    ttl_seconds: 60
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Searches private long-term memory vault notes using FTS5. Read-only."
+
+  save_memory_fact:
+    server: engram_mcp
+    domain: knowledge
+    risk: write
+    ttl_seconds: 0
+    confirmation_required: false
+    profiles: [principal_a, principal_b]
+    description: "Saves a Markdown fact note into the user's isolated vault."

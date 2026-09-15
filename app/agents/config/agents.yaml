@@ -1,0 +1,48 @@
+agents:
+  router:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_tokens: 200
+    thinking: false
+
+  homelab:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: homelab
+
+  home:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: home
+
+  workshop:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: workshop
+
+  pulsehunter:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: pulsehunter
+
+  weather_web:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: weather_web
+
+  knowledge:
+    model: qwen2.5:7b-instruct
+    temperature: 0.0
+    max_iterations: 4
+    thinking: false
+    tool_domain: knowledge

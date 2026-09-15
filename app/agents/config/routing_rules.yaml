@@ -1,0 +1,84 @@
+domains:
+  homelab:
+    keywords:
+      - docker
+      - contenedor
+      - container
+      - immich
+      - proxmox
+      - traefik
+      - nas
+      - zfs
+      - crowdsec
+      - raspi
+      - servidor
+      - cpu
+      - ram
+      - stack
+      - log
+      - logs
+
+  home:
+    keywords:
+      - luz
+      - luces
+      - enchufe
+      - sensor
+      - domótica
+      - home assistant
+      - calefacción
+      - apagar
+      - encender
+
+  workshop:
+    keywords:
+      - filamento
+      - filamentos
+      - spoolman
+      - pla
+      - petg
+      - bobina
+      - bobinas
+      - homebox
+      - inventario
+      - taller
+      - repuesto
+      - componente
+
+  pulsehunter:
+    keywords:
+      - empleo
+      - empleos
+      - trabajo
+      - vacante
+      - vacantes
+      - vivienda
+      - viviendas
+      - piso
+      - pisos
+      - alquiler
+      - daft
+      - pulse hunter
+      - pulsehunter
+
+  weather_web:
+    keywords:
+      - clima
+      - tiempo
+      - llueve
+      - temperatura
+      - pronóstico
+      - noticias
+      - buscar en internet
+      - google
+      - web
+
+  knowledge:
+    keywords:
+      - recuerda
+      - memoria
+      - nota
+      - notas
+      - obsidian
+      - vault
+      - guardado

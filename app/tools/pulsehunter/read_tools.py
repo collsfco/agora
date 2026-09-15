@@ -5,17 +5,26 @@ from app.integrations.pulsehunter import pulsehunter_client
 
 async def pulsehunter_search_jobs(
     search: Optional[str] = None,
+    alert_id: Optional[int] = None,
     country: Optional[str] = None,
     is_remote: Optional[bool] = None,
+    sort_by: Optional[str] = "last_seen_desc",
     limit: int = 5,
     owner_id: Optional[str] = None
 ) -> ToolResult[JobSearchOutput]:
     """
-    Searches recent job vacancies by keyword, country or remote status.
+    Searches recent job vacancies by keyword, specific alert ID, country, or remote status.
     Returns compact results with salary, company, top skills, and link.
     Read-only. Does not create alerts or apply to jobs.
     """
-    input_data = JobSearchInput(search=search, country=country, is_remote=is_remote, limit=limit)
+    input_data = JobSearchInput(
+        search=search,
+        alert_id=alert_id,
+        country=country,
+        is_remote=is_remote,
+        sort_by=sort_by,
+        limit=limit
+    )
     return await pulsehunter_client.search_jobs(input_data, owner_id=owner_id)
 
 async def pulsehunter_search_housing(

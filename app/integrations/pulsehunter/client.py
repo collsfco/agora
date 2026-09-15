@@ -27,10 +27,14 @@ class PulseHunterClient:
         params: Dict[str, Any] = {"limit": input_data.limit}
         if input_data.search:
             params["search"] = input_data.search
+        if input_data.alert_id:
+            params["alert_id"] = input_data.alert_id
         if input_data.country:
             params["country"] = input_data.country
         if input_data.is_remote is not None:
             params["is_remote"] = str(input_data.is_remote).lower()
+        if input_data.sort_by:
+            params["sort_by"] = input_data.sort_by
         if owner_id:
             params["owner_id"] = owner_id
 
@@ -56,7 +60,9 @@ class PulseHunterClient:
 
                 compact_jobs = []
                 for item in items[:input_data.limit]:
-                    skills = item.get("skills", [])
+                    skills = item.get("skills_extracted", [])
+                    if not skills:
+                        skills = item.get("skills", [])
                     if isinstance(skills, str):
                         skills = [s.strip() for s in skills.split(",") if s.strip()]
                     raw = item.get("raw_data") or {}

@@ -80,10 +80,13 @@ async def execute_tool(name: str, args: Dict[str, Any], profile_id: str = "princ
 
         # 2. PulseHunter
         elif name in ("pulsehunter_search_jobs", "get_pulsehunter_jobs"):
+            alert_id_val = int(args["alert_id"]) if args.get("alert_id") is not None else None
             res = await pulsehunter_search_jobs(
                 search=args.get("search"),
+                alert_id=alert_id_val,
                 country=args.get("country"),
                 is_remote=args.get("is_remote"),
+                sort_by=args.get("sort_by", "last_seen_desc"),
                 limit=int(args.get("limit", 5)),
                 owner_id=profile_id
             )

@@ -46,10 +46,12 @@ def get_tool_schemas_for_domain(tool_names: List[str]) -> List[Dict[str, Any]]:
         # PulseHunter
         elif name in ("pulsehunter_search_jobs", "get_pulsehunter_jobs"):
             properties = {
-                "search": {"type": "string", "description": "Job title or technology (e.g. PHP, Python, React)"},
-                "country": {"type": "string", "description": "Country or European Union (leave null if not specified)"},
-                "is_remote": {"type": "boolean", "description": "Whether the job is remote"},
-                "limit": {"type": "integer", "description": "Max results (set 1 if user asks for latest, or N)"}
+                "search": {"type": "string", "description": "Core technology or role keyword (e.g. PHP, React, Python)"},
+                "alert_id": {"type": "integer", "description": "Originating Alert ID from pulsehunter_list_alerts to isolate results by specific alert scope (e.g. 7 for PHP Remoto Europa, 2 for React Irlanda)"},
+                "country": {"type": "string", "description": "Country or region (leave null if querying all alerts)"},
+                "is_remote": {"type": "boolean", "description": "Whether the job is 100% remote"},
+                "sort_by": {"type": "string", "enum": ["posted_at_desc", "last_seen_desc"], "description": "Order by publication date (posted_at_desc) or discovery date (last_seen_desc)"},
+                "limit": {"type": "integer", "description": "Max results per alert/turn (set 1 if user asks for the latest, or N)"}
             }
         elif name in ("pulsehunter_search_housing", "get_pulsehunter_housing"):
             properties = {

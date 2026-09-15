@@ -240,15 +240,15 @@ Para validar la efectividad de las mejoras y comparar modelos (`qwen3:14b` vs `q
 - [x] Implementar `app/agents/loader.py` para componer prompts dinámicos según worker y perfil.
 
 ### 🔹 Fase 2: Pre-Router y Estado Tipado (`AgoraState`)
-- [ ] Implementar `app/agents/state.py` con `AgoraState`, `Evidence` y `PendingAction`.
-- [ ] Crear `app/agents/router.py` con pre-clasificación determinista por keywords (0 tokens, 0ms).
-- [ ] Implementar filtrado de herramientas para que cada turno exponga solo 3-5 tools al modelo.
+- [x] Implementar `app/agents/state.py` con `AgoraState`, `Evidence` y `PendingAction`.
+- [x] Crear `app/agents/router.py` con pre-clasificación determinista por keywords (0 tokens, 0ms).
+- [x] Implementar filtrado de herramientas para que cada turno exponga solo 3-5 tools al modelo.
 
 ### 🔹 Fase 3: Bucle Multi-Step y Verificador de Evidencia
-- [ ] Actualizar el ciclo de ejecución a multi-step (hasta 4 rondas).
-- [ ] Implementar el borde condicional de evidencia: si `requires_fresh_data=True` y no hay evidencia, bloquear respuestas especulativas.
-- [ ] Homogeneizar payloads MCP con `observed_at` y datos compactos.
+- [x] Actualizar el ciclo de ejecución a multi-step (hasta 4 rondas).
+- [x] Implementar el borde condicional de evidencia: si `requires_fresh_data=True` y no hay evidencia, bloquear respuestas especulativas.
+- [x] Homogeneizar payloads MCP con `observed_at` y datos compactos.
 
 ### 🔹 Fase 4: Confirmaciones de Telegram y Suite de Pruebas
-- [ ] Crear gestor de tickets `action_id` para acciones de escritura con botones en Telegram.
-- [ ] Implementar la suite de pruebas `evals/` para medir alucinaciones y validar `qwen3:14b` / `qwen2.5:14b`.
+- [x] Crear gestor de tickets `action_id` para acciones de escritura con botones en Telegram.
+- [x] Implementar la suite de pruebas `evals/` para medir alucinaciones y validar `qwen3:14b` / `qwen2.5:14b`.

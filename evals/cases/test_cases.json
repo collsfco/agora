@@ -1,0 +1,50 @@
+[
+  {
+    "id": "eval-filaments-es",
+    "query": "¿Qué filamentos PLA tengo disponibles en Spoolman?",
+    "expected_domain": "workshop",
+    "expected_tool": "query_workshop_filaments",
+    "requires_fresh_data": true,
+    "expected_lang": "es"
+  },
+  {
+    "id": "eval-filaments-en",
+    "query": "What PLA filaments do I have in stock?",
+    "expected_domain": "workshop",
+    "expected_tool": "query_workshop_filaments",
+    "requires_fresh_data": true,
+    "expected_lang": "en"
+  },
+  {
+    "id": "eval-homelab-docker",
+    "query": "Muestra los contenedores Docker y el estado de la CPU del servidor",
+    "expected_domain": "homelab",
+    "expected_tool": "get_homelab_overview",
+    "requires_fresh_data": true,
+    "expected_lang": "es"
+  },
+  {
+    "id": "eval-weather-home",
+    "query": "What is the weather forecast for Santander?",
+    "expected_domain": "weather_web",
+    "expected_tool": "get_weather",
+    "requires_fresh_data": true,
+    "expected_lang": "en"
+  },
+  {
+    "id": "eval-pulsehunter-jobs",
+    "query": "Busca ofertas de empleo para desarrolladores Python en remoto",
+    "expected_domain": "pulsehunter",
+    "expected_tool": "get_pulsehunter_jobs",
+    "requires_fresh_data": true,
+    "expected_lang": "es"
+  },
+  {
+    "id": "eval-general-zfs",
+    "query": "¿Qué ventajas tiene un sistema de archivos como ZFS frente a ext4?",
+    "expected_domain": "general",
+    "expected_tool": null,
+    "requires_fresh_data": false,
+    "expected_lang": "es"
+  }
+]

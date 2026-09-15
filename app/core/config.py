@@ -4,7 +4,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -31,6 +32,9 @@ class Settings(BaseModel):
         int(os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B")) if os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B") and os.getenv("TELEGRAM_USER_ID_PRINCIPAL_B").isdigit() else None
     )
     obsidian_vault_principal_b: str = os.getenv("OBSIDIAN_VAULT_PRINCIPAL_B", str(Path.home() / "ObsidianVaults" / "PrincipalB"))
+
+    # Homelab MCP Service (Raspberry Pi 4 / Local)
+    homelab_mcp_url: str = os.getenv("HOMELAB_MCP_URL", "http://localhost:8001")
 
     # PulseHunter Local MCP Service
     pulsehunter_api_url: str = os.getenv("PULSEHUNTER_API_URL", "http://localhost:8000/api/v1")

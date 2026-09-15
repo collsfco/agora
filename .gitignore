@@ -30,3 +30,4 @@ data/*.db-journal
 # Logs
 *.log
 logs/
+*.pid

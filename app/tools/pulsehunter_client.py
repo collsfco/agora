@@ -160,16 +160,18 @@ async def list_pulsehunter_alerts(alert_type: Optional[str] = None) -> Dict[str,
         return {"error": f"Error conectando con PulseHunter: {e}"}
 
 async def trigger_pulsehunter_alert_execution(alert_id: int) -> str:
-    """Dispara la ejecución inmediata del scraper para una alerta específica."""
+    """Dispara la ejecución inmediata asíncrona del scraper para una alerta específica."""
     url = f"{settings.pulsehunter_api_url}/alerts/{alert_id}/run"
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             res = await client.post(url)
-            if res.status_code in (200, 202):
-                return f"✅ Alerta ID {alert_id} ejecutada bajo demanda con éxito. El scraper está buscando nuevas vacantes/viviendas en segundo plano."
+            if res.status_code in (200, 201, 202):
+                data = res.json() if res.headers.get("content-type", "").startswith("application/json") else {}
+                alert_name = data.get("name", f"ID {alert_id}")
+                return f"🚀 Rastreo iniciado en segundo plano para la alerta '{alert_name}'. El scraper está sondeando las fuentes en background y actualizará las ofertas automáticamente."
             return f"❌ Error ejecutando alerta ({res.status_code}): {res.text}"
     except Exception as e:
-        return f"Error ejecutando alerta en PulseHunter: {e}"
+        return f"Error conectando con PulseHunter: {e}"
 
 async def delete_pulsehunter_alert(alert_id: int) -> str:
     """Elimina permanentemente una alerta de rastreo de PulseHunter."""

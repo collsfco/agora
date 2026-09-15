@@ -1,34 +1,44 @@
 domains:
-  homelab:
+  pulsehunter:
     keywords:
-      - docker
-      - contenedor
-      - container
-      - immich
-      - proxmox
-      - traefik
-      - nas
-      - zfs
-      - crowdsec
-      - raspi
-      - servidor
-      - cpu
-      - ram
-      - stack
-      - log
-      - logs
-
-  home:
-    keywords:
-      - luz
-      - luces
-      - enchufe
-      - sensor
-      - domótica
-      - home assistant
-      - calefacción
-      - apagar
-      - encender
+      - empleo
+      - empleos
+      - trabajo
+      - trabajos
+      - vacante
+      - vacantes
+      - oferta
+      - ofertas
+      - puesto
+      - puestos
+      - desarrollador
+      - developer
+      - programador
+      - programadores
+      - ingeniero
+      - sueldo
+      - salario
+      - vivienda
+      - viviendas
+      - piso
+      - pisos
+      - alquiler
+      - alquileres
+      - renta
+      - arriendo
+      - daft
+      - pulse hunter
+      - pulsehunter
+      - alerta
+      - alertas
+      - php
+      - python
+      - react
+      - node
+      - java
+      - backend
+      - frontend
+      - fullstack
 
   workshop:
     keywords:
@@ -37,39 +47,99 @@ domains:
       - spoolman
       - pla
       - petg
+      - tpu
+      - abs
       - bobina
       - bobinas
+      - spool
+      - spools
       - homebox
       - inventario
       - taller
       - repuesto
+      - repuestos
       - componente
+      - componentes
+      - teclado
+      - teclados
+      - ratón
+      - raton
+      - fuente
+      - ventilador
+      - ventiladores
+      - bandera
+      - impresión 3d
+      - impresion 3d
+      - imprimir
 
-  pulsehunter:
+  home:
     keywords:
-      - empleo
-      - empleos
-      - trabajo
-      - vacante
-      - vacantes
-      - vivienda
-      - viviendas
-      - piso
-      - pisos
-      - alquiler
-      - daft
-      - pulse hunter
-      - pulsehunter
+      - luz
+      - luces
+      - enchufe
+      - enchufes
+      - sensor
+      - sensores
+      - domótica
+      - domotica
+      - home assistant
+      - calefacción
+      - calefaccion
+      - termostato
+      - apagar
+      - encender
+      - casa
+      - hogar
+      - temperatura de mi casa
+      - temperatura interior
+      - oficina
+      - salon
+      - habitación
+      - habitacion
+      - pasillo
+
+  homelab:
+    keywords:
+      - docker
+      - contenedor
+      - contenedores
+      - container
+      - containers
+      - immich
+      - proxmox
+      - traefik
+      - nas
+      - zfs
+      - crowdsec
+      - raspi
+      - raspberry
+      - servidor
+      - cpu
+      - ram
+      - stack
+      - log
+      - logs
+      - reinicia
+      - reiniciar
+      - uptime
+      - estado del sistema
 
   weather_web:
     keywords:
       - clima
       - tiempo
       - llueve
-      - temperatura
+      - llover
+      - lluvia
+      - temperatura exterior
       - pronóstico
+      - pronostico
       - weather
       - forecast
+      - solares
+      - santander
+      - madrid
+      - dublin
       - noticias
       - buscar en internet
       - google
@@ -84,3 +154,5 @@ domains:
       - obsidian
       - vault
       - guardado
+      - guardar nota
+      - apunta

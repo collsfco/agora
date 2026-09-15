@@ -3,7 +3,7 @@
     "id": "eval-filaments-es",
     "query": "¿Qué filamentos PLA tengo disponibles en Spoolman?",
     "expected_domain": "workshop",
-    "expected_tool": "query_workshop_filaments",
+    "expected_tool": "workshop_search_filaments",
     "requires_fresh_data": true,
     "expected_lang": "es"
   },
@@ -11,7 +11,7 @@
     "id": "eval-filaments-en",
     "query": "What PLA filaments do I have in stock?",
     "expected_domain": "workshop",
-    "expected_tool": "query_workshop_filaments",
+    "expected_tool": "workshop_search_filaments",
     "requires_fresh_data": true,
     "expected_lang": "en"
   },
@@ -19,7 +19,15 @@
     "id": "eval-homelab-docker",
     "query": "Muestra los contenedores Docker y el estado de la CPU del servidor",
     "expected_domain": "homelab",
-    "expected_tool": "get_homelab_overview",
+    "expected_tool": "homelab_get_resource_overview",
+    "requires_fresh_data": true,
+    "expected_lang": "es"
+  },
+  {
+    "id": "eval-home-climate",
+    "query": "¿Me puedes decir la media de la temperatura que tengo en casa?",
+    "expected_domain": "home",
+    "expected_tool": "home_get_summary",
     "requires_fresh_data": true,
     "expected_lang": "es"
   },
@@ -27,7 +35,7 @@
     "id": "eval-weather-home",
     "query": "What is the weather forecast for Santander?",
     "expected_domain": "weather_web",
-    "expected_tool": "get_weather",
+    "expected_tool": "get_weather_forecast",
     "requires_fresh_data": true,
     "expected_lang": "en"
   },
@@ -35,7 +43,7 @@
     "id": "eval-pulsehunter-jobs",
     "query": "Busca ofertas de empleo para desarrolladores Python en remoto",
     "expected_domain": "pulsehunter",
-    "expected_tool": "get_pulsehunter_jobs",
+    "expected_tool": "pulsehunter_search_jobs",
     "requires_fresh_data": true,
     "expected_lang": "es"
   },

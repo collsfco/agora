@@ -17,8 +17,9 @@ def get_allowed_tools_for_domain(
         tool_domain = meta.get("domain")
         allowed_profiles = meta.get("profiles", [])
         risk = meta.get("risk", "read")
+        workers = meta.get("visibility", {}).get("workers", [])
 
-        if tool_domain == domain and profile_id in allowed_profiles:
+        if (tool_domain == domain or domain in workers) and profile_id in allowed_profiles:
             if include_write or risk == "read":
                 allowed.append(tool_name)
     return allowed
@@ -26,11 +27,12 @@ def get_allowed_tools_for_domain(
 def get_tool_descriptions(tool_names: List[str]) -> str:
     """Formats markdown tool descriptions for prompt injection."""
     descriptions = []
-    for name in tool_names:
-        meta = TOOL_REGISTRY.get(name, {})
-        desc = meta.get("description", "")
-        risk = meta.get("risk", "read")
-        confirm = meta.get("confirmation_required", False)
-        confirm_str = " (Requires Confirmation Token)" if confirm else ""
-        descriptions.append(f"- `{name}` [{risk.upper()}]{confirm_str}: {desc}")
+    for name in TOOL_REGISTRY.keys():
+        if name in tool_names:
+            meta = TOOL_REGISTRY.get(name, {})
+            desc = meta.get("description", "")
+            risk = meta.get("risk", "read")
+            confirm = meta.get("confirmation_required", False)
+            confirm_str = " (Requires Confirmation Token)" if confirm else ""
+            descriptions.append(f"- `{name}` [{risk.upper()}]{confirm_str}: {desc}")
     return "\n".join(descriptions)

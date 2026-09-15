@@ -46,3 +46,10 @@ agents:
     max_iterations: 4
     thinking: false
     tool_domain: knowledge
+
+  general:
+    model: qwen2.5:7b-instruct
+    temperature: 0.1
+    max_iterations: 2
+    thinking: false
+    tool_domain: general

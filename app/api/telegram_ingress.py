@@ -4,7 +4,8 @@ from typing import Dict, Any, Optional
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 from app.core.config import settings
-from app.agents.supervisor import run_principal_turn
+from app.agents.graph import run_agora_graph_turn
+from app.tools.dispatcher import execute_tool
 
 # Configurar logging detallado para diagnóstico en vivo
 logging.basicConfig(
@@ -73,12 +74,13 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.error(f"Error enviando mensaje cruzado a {target_uid}: {e}")
 
     try:
-        response_text = await run_principal_turn(
+        graph_result = await run_agora_graph_turn(
             user_message=user_text,
-            principal_id=principal_id,
+            profile_id=principal_id,
             conversation_history=history[-6:],
-            peer_notifier=peer_notify
+            tool_executor_fn=execute_tool
         )
+        response_text = graph_result.get("final_answer", "")
         logger.info(f"🤖 [GENERADA] Respuesta para {user_id}: {response_text[:80]}...")
     except Exception as e:
         logger.error(f"Error procesando turno del agente: {e}", exc_info=True)

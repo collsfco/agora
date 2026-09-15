@@ -1,24 +1,17 @@
-"""
-🔌 Homelab MCP Client para Ágora
---------------------------------
-Conector HTTP / SSE asíncrono para comunicarse con el servidor Homelab MCP (en Raspberry Pi 4 o local).
-Diseñado para no bloquear y con tolerancia total a fallos (Graceful Degradation).
-"""
-
-import json
 import httpx
+import logging
 from typing import Dict, Any, List, Optional
 from app.core.config import settings
 
+logger = logging.getLogger("agora.homelab_client")
+
 def get_base_url() -> str:
+    """Devuelve la URL base del Homelab MCP Server."""
     return settings.homelab_mcp_url.rstrip("/")
 
-# ==============================================================================
-# 📊 HERRAMIENTAS DE LECTURA & DIAGNÓSTICO (FASE 1)
-# ==============================================================================
 
 async def fetch_homelab_overview() -> Dict[str, Any]:
-    """Obtiene el resumen de salud de los 5 stacks y métricas de CPU/RAM/Temp de la Raspberry Pi."""
+    """Consulta el estado general del sistema (CPU, RAM, temperatura, contenedores) mediante REST/FastMCP."""
     url = f"{get_base_url()}/get_homelab_overview"
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
@@ -58,6 +51,19 @@ async def fetch_container_logs(container_name: str, tail: int = 50) -> Dict[str,
         return {"status": "unavailable", "message": str(e)}
 
 
+async def fetch_uptime_status() -> Dict[str, Any]:
+    """Verifica la disponibilidad general de los servicios web del Homelab comprobando puertos y endpoints clave."""
+    url = f"{get_base_url()}/get_uptime_status"
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            res = await client.get(url)
+            if res.status_code == 200:
+                return res.json() if isinstance(res.json(), dict) else {"raw": res.text}
+            return {"status": "error", "code": res.status_code, "message": res.text}
+    except Exception as e:
+        return {"status": "unavailable", "message": str(e)}
+
+
 async def fetch_home_summary() -> Dict[str, Any]:
     """Consulta temperaturas, luces encendidas y puertas abiertas en Home Assistant."""
     url = f"{get_base_url()}/get_home_summary"
@@ -81,6 +87,20 @@ async def fetch_entity_state(entity_id: str) -> Dict[str, Any]:
             if res.status_code == 200:
                 return res.json() if isinstance(res.json(), dict) else {"raw": res.text}
             return {"status": "error", "code": res.status_code}
+    except Exception as e:
+        return {"status": "unavailable", "message": str(e)}
+
+
+async def fetch_all_home_entities(domain: Optional[str] = None) -> Dict[str, Any]:
+    """Lista todos los dispositivos y entidades de Home Assistant (luces, sensores, switches, etc.)."""
+    url = f"{get_base_url()}/list_home_entities"
+    params = {"domain": domain} if domain else {}
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            res = await client.get(url, params=params)
+            if res.status_code == 200:
+                return res.json() if isinstance(res.json(), dict) else {"raw": res.text}
+            return {"status": "error", "code": res.status_code, "message": res.text}
     except Exception as e:
         return {"status": "unavailable", "message": str(e)}
 
@@ -187,16 +207,3 @@ async def execute_add_inventory_item(
             return res.json() if res.status_code == 200 else {"status": "error", "code": res.status_code}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-async def fetch_all_home_entities(domain: Optional[str] = None) -> Dict[str, Any]:
-    """Lista todos los dispositivos y entidades de Home Assistant (luces, sensores, switches, etc.)."""
-    url = f"{get_base_url()}/list_home_entities"
-    params = {"domain": domain} if domain else {}
-    try:
-        async with httpx.AsyncClient(timeout=12.0) as client:
-            res = await client.get(url, params=params)
-            if res.status_code == 200:
-                return res.json() if isinstance(res.json(), dict) else {"raw": res.text}
-            return {"status": "error", "code": res.status_code, "message": res.text}
-    except Exception as e:
-        return {"status": "unavailable", "message": str(e)}

@@ -1,177 +1,553 @@
+# Central Tool Manifest & Capability Policy Registry (Standard v2.0)
 tools:
-  # Homelab Tools
-  get_homelab_overview:
-    server: homelab_mcp
+  # ==============================================================================
+  # 1. Homelab & Infrastructure (Raspberry Pi MCP Server)
+  # ==============================================================================
+  homelab_get_resource_overview:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_resource_overview
     domain: homelab
+    capability: containers
+    operation: get_overview
     risk: read
-    ttl_seconds: 15
-    confirmation_required: false
     profiles: [principal_a, principal_b]
-    description: "Fetches current CPU, RAM, temperature, and container status. Read-only."
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 15
+      cache_ttl_seconds: 10
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 12000
+    contracts:
+      input: "agora_contracts.homelab.HomelabOverviewInput"
+      output: "agora_contracts.homelab.HomelabOverviewOutput"
+    description: "Fetches current CPU, RAM, temperature, and container health metrics from Raspberry Pi. Read-only."
 
-  list_homelab_containers:
-    server: homelab_mcp
+  homelab_list_containers:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_list_containers
     domain: homelab
+    capability: containers
+    operation: list_containers
     risk: read
-    ttl_seconds: 20
-    confirmation_required: false
     profiles: [principal_a]
-    description: "Lists running Docker containers by stack. Read-only."
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 30
+      cache_ttl_seconds: 15
+    limits:
+      timeout_seconds: 6
+      max_retries: 1
+      max_output_chars: 14000
+    description: "Lists monitored Docker containers and health state by stack. Read-only."
 
-  get_homelab_logs:
-    server: homelab_mcp
+  homelab_get_service_status:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_service_status
     domain: homelab
+    capability: containers
+    operation: get_logs
     risk: read
-    ttl_seconds: 5
-    confirmation_required: false
     profiles: [principal_a]
-    description: "Retrieves container logs. Read-only."
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 30
+      cache_ttl_seconds: 15
+    limits:
+      timeout_seconds: 6
+      max_retries: 1
+      max_output_chars: 10000
+    description: "Fetches recent log lines for a specific container to diagnose crashes or errors. Read-only."
 
-  get_crowdsec_alerts:
-    server: homelab_mcp
+  homelab_get_uptime_status:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_uptime_status
     domain: homelab
+    capability: uptime
+    operation: get_status
     risk: read
-    ttl_seconds: 30
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Queries active security bans and CrowdSec alerts. Read-only."
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 8
+      max_retries: 1
+      max_output_chars: 6000
+    description: "Checks availability and HTTP status for all hosted services (Home Assistant, Spoolman, Homebox, Kuma, AdGuard, Vaultwarden). Read-only."
 
-  restart_homelab_container:
-    server: homelab_mcp
+  homelab_get_crowdsec_alerts:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_crowdsec_status
     domain: homelab
+    capability: security
+    operation: get_alerts
+    risk: read
+    profiles: [principal_a]
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 6000
+    description: "Queries active security bans and CrowdSec firewall alerts. Read-only."
+
+  homelab_propose_restart_container:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.homelab_proposals.homelab_propose_restart_container
+    domain: homelab
+    capability: containers
+    operation: propose_restart
     risk: write
-    ttl_seconds: 0
     confirmation_required: true
     profiles: [principal_a]
-    description: "Restarts a Docker container. Requires external user confirmation token."
+    visibility:
+      workers: [homelab]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Proposes restarting a Docker container. Does NOT restart directly; generates an ActionProposal for Telegram confirmation."
 
-  # Home Assistant / Domotics
-  get_home_status:
-    server: home_assistant
-    domain: home
-    risk: read
-    ttl_seconds: 10
-    confirmation_required: false
-    profiles: [principal_a, principal_b]
-    description: "Queries home lights, climate, and sensors status. Read-only."
-
-  call_home_service:
-    server: home_assistant
-    domain: home
-    risk: write
-    ttl_seconds: 0
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Controls home lights, switches, and services."
-
-  # Workshop (Taller)
-  query_workshop_filaments:
-    server: workshop_mcp
+  # ==============================================================================
+  # 2. Workshop (3D Printing & Electronics Inventory)
+  # ==============================================================================
+  workshop_search_filaments:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_query_filaments
     domain: workshop
+    capability: 3d_printing
+    operation: search_spools
     risk: read
-    ttl_seconds: 300
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Queries 3D printing filament stock in Spoolman (material, color, weight). Read-only."
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [workshop]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 8000
+    contracts:
+      input: "agora_contracts.workshop.FilamentSearchInput"
+      output: "agora_contracts.workshop.FilamentSearchOutput"
+    description: "Queries active 3D printing spools in Spoolman (material, color, remaining grams). Read-only."
 
-  search_workshop_inventory:
-    server: workshop_mcp
+  workshop_search_inventory:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_search_inventory
     domain: workshop
+    capability: inventory
+    operation: search_items
     risk: read
-    ttl_seconds: 300
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Searches component inventory and storage locations in Homebox. Read-only."
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [workshop]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 8000
+    contracts:
+      input: "agora_contracts.workshop.InventorySearchInput"
+      output: "agora_contracts.workshop.InventorySearchOutput"
+    description: "Searches electronics components, spare parts and tools with exact physical shelf location in Homebox. Read-only."
 
-  # PulseHunter
-  get_pulsehunter_jobs:
-    server: pulsehunter_mcp
-    domain: pulsehunter
-    risk: read
-    ttl_seconds: 600
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Queries scraped job openings. Read-only."
-
-  get_pulsehunter_housing:
-    server: pulsehunter_mcp
-    domain: pulsehunter
-    risk: read
-    ttl_seconds: 600
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Queries rental and buy housing listings. Read-only."
-
-  list_pulsehunter_alerts:
-    server: pulsehunter_mcp
-    domain: pulsehunter
-    risk: read
-    ttl_seconds: 600
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Lists active search alert rules in Pulse Hunter. Read-only."
-
-  trigger_pulsehunter_alert:
-    server: pulsehunter_mcp
-    domain: pulsehunter
+  workshop_propose_add_inventory_item:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.homelab_proposals.workshop_propose_add_inventory_item
+    domain: workshop
+    capability: inventory
+    operation: propose_add
     risk: write
-    ttl_seconds: 0
-    confirmation_required: false
-    profiles: [principal_a]
-    description: "Triggers immediate scraper execution for an alert rule."
-
-  create_pulsehunter_alert:
-    server: pulsehunter_mcp
-    domain: pulsehunter
-    risk: write
-    ttl_seconds: 0
     confirmation_required: true
     profiles: [principal_a]
-    description: "Creates a new job/housing alert rule. Requires user confirmation token."
+    visibility:
+      workers: [workshop]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Proposes adding a new component or tool to Homebox inventory. Does NOT add directly; generates an ActionProposal."
 
-  delete_pulsehunter_alert:
-    server: pulsehunter_mcp
+  # ==============================================================================
+  # 3. PulseHunter (Jobs & Housing - Local Adapter)
+  # ==============================================================================
+  pulsehunter_search_jobs:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.pulsehunter.read_tools.pulsehunter_search_jobs
     domain: pulsehunter
+    capability: jobs
+    operation: search
+    risk: read
+    profiles: [principal_a]
+    visibility:
+      workers: [pulsehunter]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 1800
+      cache_ttl_seconds: 900
+    limits:
+      timeout_seconds: 12
+      max_retries: 1
+      max_output_chars: 16000
+    contracts:
+      input: "agora_contracts.pulsehunter.JobSearchInput"
+      output: "agora_contracts.pulsehunter.JobSearchOutput"
+    description: "Searches job listings and vacancies by title, tech stack or remote status. Read-only."
+
+  pulsehunter_search_housing:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.pulsehunter.read_tools.pulsehunter_search_housing
+    domain: pulsehunter
+    capability: housing
+    operation: search
+    risk: read
+    profiles: [principal_a]
+    visibility:
+      workers: [pulsehunter]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 1800
+      cache_ttl_seconds: 900
+    limits:
+      timeout_seconds: 12
+      max_retries: 1
+      max_output_chars: 16000
+    contracts:
+      input: "agora_contracts.pulsehunter.HousingSearchInput"
+      output: "agora_contracts.pulsehunter.HousingSearchOutput"
+    description: "Searches rental and sale housing listings with structured prices and bedroom filters. Read-only."
+
+  pulsehunter_list_alerts:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.pulsehunter.read_tools.pulsehunter_list_alerts
+    domain: pulsehunter
+    capability: alerts
+    operation: list_alerts
+    risk: read
+    profiles: [principal_a]
+    visibility:
+      workers: [pulsehunter]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 6000
+    description: "Lists active job and housing tracking alerts configured in PulseHunter. Read-only."
+
+  pulsehunter_propose_create_alert:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.pulsehunter.proposal_tools.pulsehunter_propose_create_alert
+    domain: pulsehunter
+    capability: alerts
+    operation: propose_create
     risk: write
-    ttl_seconds: 0
     confirmation_required: true
     profiles: [principal_a]
-    description: "Deletes an existing alert rule. Requires user confirmation token."
+    visibility:
+      workers: [pulsehunter]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Proposes creating a new recurring job alert in PulseHunter. Does NOT create it directly; emits an ActionProposal."
 
-  # Weather & Web
-  get_weather:
-    server: weather_mcp
-    domain: weather_web
-    risk: read
-    ttl_seconds: 900
-    confirmation_required: false
-    profiles: [principal_a, principal_b]
-    description: "Fetches current weather and forecast for a location. Read-only."
-
-  search_web:
-    server: web_search
-    domain: weather_web
-    risk: read
-    ttl_seconds: 1800
-    confirmation_required: false
-    profiles: [principal_a, principal_b]
-    description: "Performs DuckDuckGo web search. Read-only."
-
-  # Knowledge & Memory
-  search_user_memory:
-    server: engram_mcp
-    domain: knowledge
-    risk: read
-    ttl_seconds: 60
-    confirmation_required: false
-    profiles: [principal_a, principal_b]
-    description: "Searches private long-term memory vault notes using FTS5. Read-only."
-
-  save_memory_fact:
-    server: engram_mcp
-    domain: knowledge
+  pulsehunter_propose_delete_alert:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.pulsehunter.proposal_tools.pulsehunter_propose_delete_alert
+    domain: pulsehunter
+    capability: alerts
+    operation: propose_delete
     risk: write
-    ttl_seconds: 0
-    confirmation_required: false
+    confirmation_required: true
+    profiles: [principal_a]
+    visibility:
+      workers: [pulsehunter]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Proposes permanently deleting a job alert from PulseHunter. Does NOT delete directly; emits an ActionProposal."
+
+  # ==============================================================================
+  # 4. Home Assistant / Domótica
+  # ==============================================================================
+  home_get_summary:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_home_summary
+    domain: home
+    capability: climate_lights
+    operation: get_summary
+    risk: read
     profiles: [principal_a, principal_b]
-    description: "Saves a Markdown fact note into the user's isolated vault."
+    visibility:
+      workers: [home]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 15
+    limits:
+      timeout_seconds: 6
+      max_retries: 1
+      max_output_chars: 8000
+    description: "Gets real-time home sensor temperatures, humidity, active lights and open doors/windows from Home Assistant. Read-only."
+
+  home_get_entity_state:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_get_entity_state
+    domain: home
+    capability: entity_state
+    operation: get_state
+    risk: read
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [home]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 30
+      cache_ttl_seconds: 10
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 6000
+    description: "Gets detailed state and attributes of a specific Home Assistant entity. Read-only."
+
+  home_list_entities:
+    version: 1
+    enabled: true
+    adapter:
+      type: mcp
+      server: homelab_mcp
+      tool: homelab_list_home_entities
+    domain: home
+    capability: entity_list
+    operation: list_entities
+    risk: read
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [home]
+      max_tools_per_turn_group: 3
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 60
+      cache_ttl_seconds: 30
+    limits:
+      timeout_seconds: 6
+      max_retries: 1
+      max_output_chars: 8000
+    description: "Lists all entities or filters by domain (e.g. light, switch, climate, sensor) in Home Assistant. Read-only."
+
+  home_propose_call_service:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.homelab_proposals.home_propose_call_service
+    domain: home
+    capability: climate_lights
+    operation: propose_service
+    risk: write
+    confirmation_required: true
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [home]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Proposes executing a Home Assistant service (turn on/off light, change climate mode). Does NOT execute directly; emits an ActionProposal."
+
+  # ==============================================================================
+  # 5. Weather & Web Search
+  # ==============================================================================
+  get_weather_forecast:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.weather_tool.get_weather_forecast
+    domain: weather_web
+    capability: forecast
+    operation: get_forecast
+    risk: read
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [weather_web, home]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 3600
+      cache_ttl_seconds: 1800
+    limits:
+      timeout_seconds: 8
+      max_retries: 2
+      max_output_chars: 6000
+    description: "Gets real-time temperature, humidity, wind, and forecast using Open-Meteo for any city. Read-only."
+
+  web_search:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.web_search_tool.search_internet
+    domain: weather_web
+    capability: web_search
+    operation: search
+    risk: read
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [weather_web]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: true
+      max_evidence_age_seconds: 3600
+      cache_ttl_seconds: 1800
+    limits:
+      timeout_seconds: 10
+      max_retries: 1
+      max_output_chars: 8000
+    description: "Searches Google / DuckDuckGo for recent news, online articles, and documentation. Read-only."
+
+  # ==============================================================================
+  # 6. Memory & Knowledge (Obsidian Vault FTS5)
+  # ==============================================================================
+  memory_search_notes:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.engram_fts5.search_memory
+    domain: knowledge
+    capability: memory
+    operation: search
+    risk: read
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [knowledge]
+      max_tools_per_turn_group: 2
+    freshness:
+      requires_live_evidence: false
+      max_evidence_age_seconds: 3600
+      cache_ttl_seconds: 1800
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 10000
+    description: "Searches private Obsidian vault notes using fast full-text search (FTS5). Read-only."
+
+  memory_write_note:
+    version: 1
+    enabled: true
+    adapter:
+      type: local
+      handler: app.tools.obsidian_io.write_markdown_fact
+    domain: knowledge
+    capability: memory
+    operation: write_fact
+    risk: write
+    profiles: [principal_a, principal_b]
+    visibility:
+      workers: [knowledge]
+      max_tools_per_turn_group: 2
+    limits:
+      timeout_seconds: 5
+      max_retries: 1
+      max_output_chars: 4000
+    description: "Saves a new fact, project note, or preference to user private Obsidian vault in Markdown format."

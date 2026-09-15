@@ -68,6 +68,8 @@ domains:
       - llueve
       - temperatura
       - pronóstico
+      - weather
+      - forecast
       - noticias
       - buscar en internet
       - google
